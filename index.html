@@ -1,0 +1,22 @@
+<html>
+	<head>
+		<title>Sipt</title>
+		<script type="text/javascript" src="scripts/mathjs.js"></script>
+		<script type="text/javascript" src="scripts/Sipt.js"></script>
+	</head>
+	<body>
+		<script type="text/javascript">
+			var S1 = new Sipt(`
+				def A {
+					A = 12;
+					B = 17;
+					ret [A + B];
+				}
+
+				ret [A() + 5];
+			`);
+
+			document.querySelector("body").innerHTML += S1.Return;
+		</script>
+	</body>
+</html>
