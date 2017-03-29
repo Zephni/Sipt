@@ -6,17 +6,19 @@
 	</head>
 	<body>
 		<script type="text/javascript">
-			var S1 = new Sipt(`
-				def A {
-					A = 12;
-					B = 17;
-					ret [A + B];
+			var S1 = new Sipt();
+
+			S1.SetSourceMethod("SourceMethod", function(param1){
+				document.querySelector("body").innerHTML += param1 + " and source method";
+			});
+
+			S1.Execute(`
+				def InternalMethod(){
+					return "internal method";
 				}
 
-				ret [A() + 5];
+				SourceMethod(InternalMethod());
 			`);
-
-			document.querySelector("body").innerHTML += S1.Return;
 		</script>
 	</body>
 </html>
