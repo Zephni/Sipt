@@ -8,16 +8,21 @@
 		<script type="text/javascript">
 			var S1 = new Sipt();
 
-			S1.SetSourceMethod("SourceMethod", function(param1){
-				document.querySelector("body").innerHTML += param1 + " and source method";
+			S1.SetMethod("Write", function(param1){
+				document.write(param1);
 			});
 
 			S1.Execute(`
-				def InternalMethod(){
-					return "internal method";
+				def Check(var1){
+					if(var1 >= 18){
+						return "18 or over";
+					}else{
+						return "under 18";
+					}
 				}
-
-				SourceMethod(InternalMethod());
+				
+				Result = Check(20);
+				Write(Result);
 			`);
 		</script>
 	</body>

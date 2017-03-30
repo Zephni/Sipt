@@ -60,11 +60,25 @@ Sipt = function(Str = null)
 	// Runs commands, returns if reaches return statement
 	this.RunCommands = function(Str)
 	{
-		var CommandsRegex = /\s*(.*[^\s*])\s*;/gi;
+		var CommandsRegex = /\s*(.*)[^\s]*;|(if)\s*\(\s*(.*)\s*\)\s*{\s*([\s\S]*)\s*}(else)\s*{\s*([\s\S]*)\s*}/gi;
 		while((Result = CommandsRegex.exec(Str)) !== null)
 		{
-			if((Value = this.RunCommand(Result[1])) != null)
-				return Value;
+			// If statement
+			if(Result[2] != undefined){
+				if(this.Evaluate(Result[3])){
+					if((Value = this.RunCommands(Result[4])) != null)
+						return Value;
+				}else if(Result[5] != undefined){
+					if(this.Evaluate(Result[5]))
+						if((Value = this.RunCommands(Result[6])) != null)
+							return Value;
+				}
+			}
+			else
+			{
+				if((Value = this.RunCommand(Result[1])) != null)
+					return Value;			
+			}
 		}
 
 		return null;
@@ -73,9 +87,12 @@ Sipt = function(Str = null)
 	// Runs command, returns if return statment
 	this.RunCommand = function(Str)
 	{
+		// Trim
+		Str = Str.trim();
+
 		// Comment
 		if(Str.substr(0, 2) == "//")
-			return null;
+			return;
 
 		// Type: Assign
 		var CheckAssign = /([^\s]*)\s*=(.*)/gi;
@@ -118,13 +135,19 @@ Sipt = function(Str = null)
 	// Sets method on current stackid, if StackID parameter is a value method will be set on that stackid
 	this.SetMethod = function(Alias, params = [], MethodBody = "", StackID = null)
 	{
+		// If function body passed as params
+		if(typeof(params) === "function")
+		{
+			S1.Methods[0][Alias] = {Body: params}
+			return null;
+		}
+
 		if(StackID == null)
 			StackID = this.CurrentStackID;
 
 		if(this.Methods[StackID] === undefined)
 			this.Methods[StackID] = {};
 
-		// Method needs sorting here before applying
 		// Add to methods
 		this.Methods[StackID][Alias] = {
 			Params: params,
@@ -132,13 +155,6 @@ Sipt = function(Str = null)
 		}
 
 		return null;
-	}
-
-	this.SetSourceMethod = function(Alias, Func)
-	{
-		S1.Methods[0][Alias] = {
-			Body: Func
-		}
 	}
 
 	// Returns variable from current/global stackid, null if doesn't exist
@@ -156,8 +172,8 @@ Sipt = function(Str = null)
 	{
 		var StackID = this.CurrentStackID;
 
-		if(this.Methods[StackID][Alias] != null) return this.Methods[StackID][Alias];
-		else if(this.Methods[0][Alias] != null) return this.Methods[0][Alias];
+		if(this.Methods[StackID] != undefined && this.Methods[StackID][Alias] != undefined) return this.Methods[StackID][Alias];
+		else if(this.Methods[0][Alias] != undefined) return this.Methods[0][Alias];
 		else return null;
 	}
 
@@ -218,12 +234,21 @@ Sipt = function(Str = null)
 		// Else build string
 		catch(e)
 		{
-			var NewString = "";
-			ConcatStrings = FinalResult.split(/\s*\+\s*/gi);
-			for(var I in ConcatStrings)
-				NewString += ConcatStrings[I].replace(/"/g, "");
-			
-			FinalResult = NewString;
+			// Try to build string
+			try
+			{
+				var NewString = "";
+				ConcatStrings = FinalResult.split(/\s*\+\s*/gi);
+				for(var I in ConcatStrings)
+					NewString += ConcatStrings[I].replace(/"/g, "");
+				
+				FinalResult = NewString;
+			}
+			// Else return whether true or false
+			catch(e)
+			{
+				// Probably a conditional statement
+			}
 		}
 
 		// Return evaluated expression
