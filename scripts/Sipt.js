@@ -156,25 +156,35 @@ Sipt = function(Str = null)
 
 		return null;
 	}
-
+	
 	// Returns variable from current/global stackid, null if doesn't exist
 	this.GetVariable = function(Alias)
 	{
-		var StackID = this.CurrentStackID;
+		for(var ID = this.CurrentStackID; ID >= 0; ID--)
+		{
+			if(this.Variables[ID] != undefined)
+			{
+				if(this.Variables[ID][Alias] != undefined)
+					return this.Variables[ID][Alias];
+			}
+		}
 
-		if(this.Variables[StackID] != null) return this.Variables[StackID][Alias];
-		else if(this.Variables[0] != null) return this.Variables[0][Alias];
-		else return null;
+		return null;
 	}
-
+	
 	// Returns method from current/global stackid, null if doesn't exist
 	this.GetMethod = function(Alias)
 	{
-		var StackID = this.CurrentStackID;
+		for(var ID = this.CurrentStackID; ID >= 0; ID--)
+		{
+			if(this.Methods[ID] != undefined)
+			{
+				if(this.Methods[ID][Alias] != undefined)
+					return this.Methods[ID][Alias];
+			}
+		}
 
-		if(this.Methods[StackID] != undefined && this.Methods[StackID][Alias] != undefined) return this.Methods[StackID][Alias];
-		else if(this.Methods[0][Alias] != undefined) return this.Methods[0][Alias];
-		else return null;
+		return null;
 	}
 
 	// Runs method on current/global stackid, returns null if doesn't exist
@@ -200,7 +210,13 @@ Sipt = function(Str = null)
 	// Evaluates given expression string
 	this.Evaluate = function(Expression = "")
 	{
+		if(Expression === undefined || Expression === null || Expression == "")
+			return;
+
 		var FinalResult = Expression;
+
+		if(isNaN(FinalResult))
+			FinalResult = FinalResult.trim();
 
 		// Express: Methods 
 		var MethodsRegex = /[a-z]+\d*\(.*\)/gi;
@@ -217,9 +233,11 @@ Sipt = function(Str = null)
 		}
 
 		// Express: Variables
-		var VariablesRegex = /\w+(?=(?:[^"]*"[^"]*")*[^"]*$)/gi;
+		var VariablesRegex = /[a-z0-9]+(?=(?:[^"]*"[^"]*")*[^"]*$)/gi;
 		while((VariableResult = VariablesRegex.exec(FinalResult)) !== null)
 		{
+			if(VariableResult[0] == undefined) continue;
+
 			var Value = this.GetVariable(VariableResult[0]);
 
 			if(Value != null)

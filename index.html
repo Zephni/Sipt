@@ -13,15 +13,13 @@
 			});
 
 			S1.Execute(`
-				def Check(var1){
-					if(var1 >= 18){
-						return "18 or over";
-					}else{
-						return "under 18";
-					}
+				Ext = 2;
+
+				def Check(Param1){
+					return Param1 + 4 + Ext;
 				}
 				
-				Result = Check(20);
+				Result = Check(4 + Ext);
 				Write(Result);
 			`);
 		</script>
