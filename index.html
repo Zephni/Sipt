@@ -8,19 +8,22 @@
 		<script type="text/javascript">
 			var S1 = new Sipt();
 
-			S1.SetMethod("Write", function(param1){
-				document.write(param1);
+			S1.SetMethod("GetStackID", function(param){
+				return this.CurrentStackID-1;
 			});
 
 			S1.Execute(`
-				Ext = 2;
-
-				def Check(Param1){
-					return Param1 + 4 + Ext;
+				def Test(){
+					Log(GetStackID());
+					def Tester(){
+						Log(GetStackID());
+					}
+					Tester();
 				}
-				
-				Result = Check(4 + Ext);
-				Write(Result);
+
+				Test();
+				Log(GetStackID());
+				Test();
 			`);
 		</script>
 	</body>

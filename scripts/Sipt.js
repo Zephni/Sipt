@@ -23,8 +23,7 @@ Sipt = function(Str = null)
 	// Executes a Sipt string
 	this.Execute = function(Str)
 	{
-		this.CurrentStackID++;
-		Str = this.FindSetCleanMethodsFromString(Str);
+		this.CurrentStackID = 0;
 		return this.RunCommands(Str);
 	}
 
@@ -60,28 +59,30 @@ Sipt = function(Str = null)
 	// Runs commands, returns if reaches return statement
 	this.RunCommands = function(Str)
 	{
+		Str = this.FindSetCleanMethodsFromString(Str);
+		
 		var CommandsRegex = /\s*(.*)[^\s]*;|(if)\s*\(\s*(.*)\s*\)\s*{\s*([\s\S]*)\s*}(else)\s*{\s*([\s\S]*)\s*}/gi;
 		while((Result = CommandsRegex.exec(Str)) !== null)
 		{
 			// If statement
 			if(Result[2] != undefined){
 				if(this.Evaluate(Result[3])){
-					if((Value = this.RunCommands(Result[4])) != null)
-						return Value;
+					Value = this.RunCommands(Result[4]);
 				}else if(Result[5] != undefined){
 					if(this.Evaluate(Result[5]))
-						if((Value = this.RunCommands(Result[6])) != null)
-							return Value;
+						Value = this.RunCommands(Result[6]);
 				}
 			}
 			else
 			{
-				if((Value = this.RunCommand(Result[1])) != null)
-					return Value;			
+				Value = this.RunCommand(Result[1]);
 			}
 		}
 
-		return null;
+		if(Value === undefined)
+			Value = null;
+
+		return Value;
 	}
 
 	// Runs command, returns if return statment
@@ -156,7 +157,7 @@ Sipt = function(Str = null)
 
 		return null;
 	}
-	
+
 	// Returns variable from current/global stackid, null if doesn't exist
 	this.GetVariable = function(Alias)
 	{
@@ -171,7 +172,7 @@ Sipt = function(Str = null)
 
 		return null;
 	}
-	
+
 	// Returns method from current/global stackid, null if doesn't exist
 	this.GetMethod = function(Alias)
 	{
@@ -190,9 +191,13 @@ Sipt = function(Str = null)
 	// Runs method on current/global stackid, returns null if doesn't exist
 	this.RunMethod = function(Alias, Parameters = [])
 	{
+		if(this.CurrentStackID >= 1000)
+		{
+			console.log("Stack overflow");
+			return;
+		}
+
 		var Method = this.GetMethod(Alias);
-		
-		var OriginalStackID = this.CurrentStackID;
 		this.CurrentStackID++;
 
 		for(var I in Parameters)
@@ -202,7 +207,7 @@ Sipt = function(Str = null)
 			? this.RunCommands(Method.Body)
 			: Method.Body.apply(this, Parameters);
 
-		this.CurrentStackID  = OriginalStackID;
+		this.CurrentStackID--;
 
 		return Value;
 	}
