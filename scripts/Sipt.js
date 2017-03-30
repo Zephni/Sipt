@@ -18,7 +18,7 @@ Sipt = function(Str = null)
 	}];
 
 	// Current stackid
-	this.CurrentStackID = -1;
+	this.CurrentStackID = 0;
 
 	// Executes a Sipt string
 	this.Execute = function(Str)
@@ -60,7 +60,7 @@ Sipt = function(Str = null)
 	this.RunCommands = function(Str)
 	{
 		Str = this.FindSetCleanMethodsFromString(Str);
-		
+
 		var CommandsRegex = /\s*(.*)[^\s]*;|(if)\s*\(\s*(.*)\s*\)\s*{\s*([\s\S]*)\s*}(else)\s*{\s*([\s\S]*)\s*}/gi;
 		while((Result = CommandsRegex.exec(Str)) !== null)
 		{
