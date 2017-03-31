@@ -8,23 +8,46 @@
 		<script type="text/javascript">
 			var S1 = new Sipt();
 
-			S1.SetMethod("GetStackID", function(param){
-				return this.CurrentStackID-1;
+			S1.SetMethod("MoveX", function(param1){
+				this.Paused = true;
+				var Move = param1;
+				var interval = setInterval(() => {
+					if(--Move > 0){
+						document.querySelector("div").style.left = (parseInt(document.querySelector("div").style.left) + 1) + "px";
+					}else{
+						this.Paused = false;
+						clearInterval(interval);
+					}
+				}, 10);
+			});
+
+			S1.SetMethod("MoveY", function(param1){
+				this.Paused = true;
+				var Move = param1;
+				var interval = setInterval(() => {
+					if(--Move > 0){
+						document.querySelector("div").style.top = (parseInt(document.querySelector("div").style.top) + 1) + "px";
+					}else{
+						this.Paused = false;
+						clearInterval(interval);
+					}
+				}, 10);
 			});
 
 			S1.Execute(`
-				def Test(){
-					Log(GetStackID());
-					def Tester(){
-						Log(GetStackID());
-					}
-					Tester();
-				}
-
-				Test();
-				Log(GetStackID());
-				Test();
+				MoveY(50);
+				MoveX(50);
+				MoveY(50);
+				MoveX(50);
+				MoveY(50);
+				MoveX(50);
+				MoveY(50);
+				MoveX(50);
 			`);
+
+			
 		</script>
+
+		<div style="background: red; width: 32px; height: 32px; position: absolute; left: 0px; top: 0px;"></div>
 	</body>
 </html>

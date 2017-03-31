@@ -5,6 +5,11 @@ Sipt = function(Str = null)
 
 	// Methods [int stackid (0 is global): {key => value}]
 	this.Methods = [{
+		GetStackID: {
+			Body: function(){
+				return this.CurrentStackID-1;
+			}
+		},
 		Log: {
 			Body: function(string){
 				console.log(string);
@@ -13,6 +18,14 @@ Sipt = function(Str = null)
 		Alert: {
 			Body: function(string){
 				alert(string);
+			}
+		},
+		Wait: {
+			Body: function(t){
+				this.Paused = true;
+				setTimeout(() => {
+					this.Paused = false;
+				}, t);
 			}
 		}
 	}];
@@ -62,25 +75,54 @@ Sipt = function(Str = null)
 		Str = this.FindSetCleanMethodsFromString(Str);
 
 		var CommandsRegex = /\s*(.*)[^\s]*;|(if)\s*\(\s*(.*)\s*\)\s*{\s*([\s\S]*)\s*}(else)\s*{\s*([\s\S]*)\s*}/gi;
+
+		var CommandsArray = [];
 		while((Result = CommandsRegex.exec(Str)) !== null)
+			CommandsArray.push(Result);
+
+		return this.ContinueCommand(CommandsArray);
+	}
+
+	this.ContinueCommand = function(CommandsArray, I = 0, Value = null)
+	{
+		if(I < CommandsArray.length)
 		{
-			// If statement
-			if(Result[2] != undefined){
-				if(this.Evaluate(Result[3])){
-					Value = this.RunCommands(Result[4]);
-				}else if(Result[5] != undefined){
-					if(this.Evaluate(Result[5]))
-						Value = this.RunCommands(Result[6]);
-				}
+			if(!this.Paused)
+			{
+				Value = this.ResultCommand(CommandsArray[I]);
+				return this.ContinueCommand(CommandsArray, ++I, Value);
 			}
 			else
 			{
-				Value = this.RunCommand(Result[1]);
+				var PausedInterval = setInterval(() => {
+					if(!this.Paused)
+					{
+						Value = this.ResultCommand(CommandsArray[I]);
+						this.ContinueCommand(CommandsArray, ++I, Value);
+						clearInterval(PausedInterval);
+					}
+				}, 0);
 			}
 		}
 
-		if(Value === undefined)
-			Value = null;
+		return Value;
+	}
+
+	this.ResultCommand = function(Result)
+	{
+		// If statement
+		if(Result[2] != undefined){
+			if(this.Evaluate(Result[3])){
+				Value = this.RunCommands(Result[4]);
+			}else if(Result[5] != undefined){
+				if(this.Evaluate(Result[5]))
+					Value = this.RunCommands(Result[6]);
+			}
+		}
+		else
+		{
+			Value = this.RunCommand(Result[1]);
+		}
 
 		return Value;
 	}
@@ -193,7 +235,7 @@ Sipt = function(Str = null)
 	{
 		if(this.CurrentStackID >= 1000)
 		{
-			console.log("Stack overflow");
+			console.log("Sipt: Stack overflow");
 			return;
 		}
 
