@@ -1,53 +1,24 @@
 <html>
 	<head>
 		<title>Sipt</title>
-		<script type="text/javascript" src="scripts/mathjs.js"></script>
 		<script type="text/javascript" src="scripts/Sipt.js"></script>
 	</head>
 	<body>
 		<script type="text/javascript">
-			var S1 = new Sipt();
-
-			S1.SetMethod("MoveX", function(param1){
-				this.Paused = true;
-				var Move = param1;
-				var interval = setInterval(() => {
-					if(--Move > 0){
-						document.querySelector("div").style.left = (parseInt(document.querySelector("div").style.left) + 1) + "px";
-					}else{
-						this.Paused = false;
-						clearInterval(interval);
-					}
-				}, 10);
+			// Custom JS method named 'Write'
+			Sipt.SetMethod("Write", function(str){
+				document.body.innerHTML += str + " JS method";
 			});
 
-			S1.SetMethod("MoveY", function(param1){
-				this.Paused = true;
-				var Move = param1;
-				var interval = setInterval(() => {
-					if(--Move > 0){
-						document.querySelector("div").style.top = (parseInt(document.querySelector("div").style.top) + 1) + "px";
-					}else{
-						this.Paused = false;
-						clearInterval(interval);
-					}
-				}, 10);
-			});
+			Sipt.Execute(`
+				// Defining custom internal method with a single parameter that calls another method named 'Write'
+				def CustomMethod(Param1){
+					Write(Param1);
+				}
 
-			S1.Execute(`
-				MoveY(50);
-				MoveX(50);
-				MoveY(50);
-				MoveX(50);
-				MoveY(50);
-				MoveX(50);
-				MoveY(50);
-				MoveX(50);
+				// Calling 'CustomMethod' with a string parameter
+				CustomMethod("Interal method calling");
 			`);
-
-			
 		</script>
-
-		<div style="background: red; width: 32px; height: 32px; position: absolute; left: 0px; top: 0px;"></div>
 	</body>
 </html>
